@@ -1,5 +1,7 @@
 package jlox;
 
+import java.lang.ClassCastException;
+
 class Interpreter implements Expr.Visitor<Object> {
 
     void interpret(Expr expression) {
@@ -39,6 +41,13 @@ class Interpreter implements Expr.Visitor<Object> {
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left - (double)right;
             case PLUS:
+                if (left instanceof String || right instanceof String) {
+                    try {
+                        return stringify(left) + stringify(right);
+                    } catch (ClassCastException exception) {
+                        throw new RuntimeError(expr.operator, "Operands for concatenation must be compatible types.");
+                    }
+                }
                 if (left instanceof Double && right instanceof Double) {
                     return (double)left + (double)right;
                 }
@@ -46,9 +55,10 @@ class Interpreter implements Expr.Visitor<Object> {
                     return (String)left + (String)right;
                 }
                 throw new RuntimeError(expr.operator,
-                    "Operands must be two numbers or two strings.");
+                    "Operands must be compatible types.");
             case SLASH:
                 checkNumberOperands(expr.operator, left, right);
+                if ((double)right == 0) throw new RuntimeError(expr.operator, "Cannot divide number by 0");
                 return (double)left / (double) right;
             case STAR:
                 checkNumberOperands(expr.operator, left, right);
