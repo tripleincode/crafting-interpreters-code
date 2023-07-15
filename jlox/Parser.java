@@ -98,29 +98,7 @@ class Parser {
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
-
-        // Error productions for missing left operands
-        if (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            error(previous(), "Missing left operand of equality.");
-            equality();
-            return null;
-        }
-        if (match(LESS, LESS_EQUAL, GREATER, GREATER_EQUAL)) {
-            error(previous(), "Missing left operand of comparison.");
-            comparison();
-            return null;
-        }
-        if (match(PLUS)) {
-            error(previous(), "Missing left operand of addition.");
-            term();
-            return null;
-        }
-        if (match(SLASH, STAR)) {
-            error(previous(), "Missing left operand of multiplication/division.");
-            factor();
-            return null;
-        }
-
+        
         throw error(peek(), "Expect expression.");
     }
 
