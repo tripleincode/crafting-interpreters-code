@@ -16,6 +16,15 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
+    String interpret (Expr expr) {
+        try {
+            return stringify(evaluate(expr));
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+            return null;
+        }
+    }
+
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
