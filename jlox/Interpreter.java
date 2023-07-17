@@ -6,11 +6,17 @@ class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
     private Environment environment = new Environment();
 
+    // For continue and break to work
+    private static int loopNesting = 0;
+    private static boolean breakLoop = false;
+    private static boolean continueLoop = false;
+
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
                 execute(statement);
             }
+
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -32,6 +38,13 @@ class Interpreter implements Expr.Visitor<Object>,
 
             for (Stmt statement : statements) {
                 execute(statement);
+                if (breakLoop || continueLoop) {
+                    if (loopNesting > 0) {
+                        break;
+                    } else {
+                        //throw new RuntimeError(statement.token, "Invalid '" + statement.token.lexeme + "'outside of loop.");
+                    }
+                }
             }
         } finally {
             this.environment = previous;
@@ -80,9 +93,26 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
+        loopNesting++;
         while (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body);
+            continueLoop = false;
+            if (breakLoop) break;
         }
+        breakLoop = false;
+        loopNesting--;
+        return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        breakLoop = true;
+        return null;
+    }
+
+    @Override
+    public Void visitContinueStmt(Stmt.Continue stmt) {
+        continueLoop = true;
         return null;
     }
 

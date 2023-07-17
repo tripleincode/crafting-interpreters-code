@@ -41,6 +41,8 @@ class Parser {
 
     private Stmt statement() {
         if (match(FOR)) return forStatement();
+        if (match(BREAK)) return breakStatement();
+        if (match(CONTINUE)) return continueStatement();
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
         if (match(WHILE)) return whileStatement();
@@ -89,6 +91,18 @@ class Parser {
         }
         
         return body;
+    }
+
+    private Stmt breakStatement() {
+        Token breakToken = previous();
+        consume(SEMICOLON, "Expect ';' after break.");
+        return new Stmt.Break(breakToken);
+    }
+
+    private Stmt continueStatement() {
+        Token continueToken = previous();
+        consume(SEMICOLON, "Expect ';' after continue.");
+        return new Stmt.Continue(continueToken);
     }
 
     private Stmt ifStatement() {
