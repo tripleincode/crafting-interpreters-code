@@ -17,6 +17,8 @@ public class GenerateAst {
             "Assign     : Token name, Expr value",
             "Logical    : Expr left, Token operator, Expr right",
             "Binary     : Expr left, Token operator, Expr right",
+            "Function   : List<Token> params," + 
+                        " List<Stmt> body",
             "Call       : Expr callee, Token paren, List<Expr> arguments",
             "Unary      : Token operator, Expr right",
             "Literal    : Object value",

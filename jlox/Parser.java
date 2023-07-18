@@ -26,12 +26,17 @@ class Parser {
     }
 
     private Expr expression() {
+        if (match(FUN)) return anonFunction();
         return assignment();
     }
 
     private Stmt declaration() {
         try {
-            if (match(FUN)) return function("function");
+            if (match(FUN) && check(IDENTIFIER)) {
+                return function("function");
+            } else {
+                retreat();
+            }
             if (match(VAR)) return varDeclaration();
             return statement();
         } catch (ParseError error) {
@@ -310,6 +315,24 @@ class Parser {
         return expr;
     }
 
+    private Expr anonFunction() {
+        consume(LEFT_PAREN, "Expect '(' after 'fun'.");
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+                parameters.add(
+                    consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, "Expect '{' before anonymous function body.");
+        List<Stmt> body = block();
+        return new Expr.Function(parameters, body);
+    }
+
     private Expr primary() {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
@@ -356,6 +379,11 @@ class Parser {
     private Token advance() {
         if (!isAtEnd()) current++;
         return previous();
+    }
+
+    private Token retreat() {
+        current--;
+        return peek();
     }
 
     private boolean isAtEnd() {
